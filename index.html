@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameZone - Sky Pilot</title>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#090d1b;
+  color:white;
+  text-align:center;
+}
+header {
+  padding:20px;
+  background:#151d35;
+  color:#45e6e0;
+  font-size:25px;
+  font-weight:bold;
+}
+.container {
+  max-width:650px;
+  margin:35px auto;
+  padding:20px;
+  background:#151d35;
+  border-radius:18px;
+}
+#multiplier {
+  font-size:55px;
+  font-weight:bold;
+  color:#45e6e0;
+  margin:20px;
+}
+#sky {
+  height:220px;
+  background:linear-gradient(#101c43,#273e65);
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+}
+#plane {
+  font-size:55px;
+  position:absolute;
+  left:15%;
+  bottom:25px;
+  transition:bottom .1s linear;
+}
+button {
+  padding:13px 25px;
+  margin:10px;
+  border:0;
+  border-radius:9px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#start {background:#45e6e0;color:#08101d;}
+#collect {background:#ff4f9a;color:white;}
+#collect:disabled {opacity:.4;cursor:not-allowed;}
+#status {color:#b8c4e8;margin:20px;}
+#points {font-size:19px;color:#ffd36a;}
+</style>
+</head>
+<body>
+
+<header>🎮 GAMEZONE</header>
+
+<div class="container">
+  <h2>✈️ SKY PILOT</h2>
+  <p>Collect virtual points before the flight ends!</p>
+
+  <div id="sky">
+    <div id="plane">✈️</div>
+  </div>
+
+  <div id="multiplier">1.00x</div>
+
+  <p id="status">Ready to play?</p>
+  <p id="points">Virtual Points: 0</p>
+
+  <button id="start" onclick="startGame()">START ROUND</button>
+  <button id="collect" onclick="collectPoints()" disabled>
+    COLLECT POINTS
+  </button>
+</div>
+
+<script>
+let points = 0;
+let multiplier = 1;
+let playing = false;
+let startTime = 0;
+let crashTime = 0;
+let animation;
+
+const multiplierDisplay =
+  document.getElementById("multiplier");
+
+const statusDisplay =
+  document.getElementById("status");
+
+const plane =
+  document.getElementById("plane");
+
+const startButton =
+  document.getElementById("start");
+
+const collectButton =
+  document.getElementById("collect");
+
+function startGame() {
+  if (playing) return;
+
+  multiplier = 1;
+  playing = true;
+  startTime = performance.now();
+
+  // Random visual round duration
+  crashTime = 2500 + Math.random() * 4500;
+
+  startButton.disabled = true;
+  collectButton.disabled = false;
+
+  statusDisplay.textContent = "Flight in progress...";
+  multiplierDisplay.style.color = "#45e6e0";
+  plane.style.bottom = "25px";
+
+  animation = requestAnimationFrame(updateGame);
+}
+
+function updateGame(time) {
+  if (!playing) return;
+
+  let elapsed = time - startTime;
+
+  multiplier = 1 + elapsed / 5000;
+
+  multiplierDisplay.textContent =
+    multiplier.toFixed(2) + "x";
+
+  plane.style.bottom =
+    Math.min(160, 25 + elapsed / 35) + "px";
+
+  if (elapsed >= crashTime) {
+    endGame();
+    return;
+  }
+
+  animation = requestAnimationFrame(updateGame);
+}
+
+function collectPoints() {
+  if (!playing) return;
+
+  let earned = Math.floor(multiplier * 100);
+
+  points += earned;
+
+  document.getElementById("points").textContent =
+    "Virtual Points: " + points;
+
+  statusDisplay.textContent =
+    "You collected " + earned + " points!";
+
+  stopGame();
+}
+
+function endGame() {
+  playing = false;
+
+  multiplierDisplay.style.color = "#ff4f9a";
+  statusDisplay.textContent =
+    "ROUND OVER! Try another round.";
+
+  stopGame();
+}
+
+function stopGame() {
+  playing = false;
+  cancelAnimationFrame(animation);
+
+  startButton.disabled = false;
+  collectButton.disabled = true;
+}
+</script>
+
+</body>
+</html>
